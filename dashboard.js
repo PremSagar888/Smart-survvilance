@@ -522,6 +522,17 @@ function processLiveMessage(data) {
                 container.appendChild(card);
             }
         }
+        else if (type === 'FINISHED_DATA') {
+            const jsonDataStr = parts.slice(1).join(',');
+            try {
+                const data = JSON.parse(jsonDataStr);
+                state.sessionData = data;
+                populateSurveillanceDashboard(data);
+                document.getElementById('loaded-file-name').textContent = `Live Telemetry Session Loaded`;
+            } catch (err) {
+                console.error('Error parsing live finished JSON data:', err);
+            }
+        }
         else if (type === 'FINISHED') {
             const jsonPath = parts[1];
             fetch(jsonPath)
