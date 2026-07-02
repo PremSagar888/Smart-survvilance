@@ -413,7 +413,8 @@ function updateLastPacketInfo(packet) {
 // ========== PROCESS LIVE WEBSOCKET MESSAGES ==========
 function processLiveMessage(data) {
     try {
-        const parts = data.split(',');
+        const delimiter = data.includes('|') ? '|' : ',';
+        const parts = data.split(delimiter);
         const type = parts[0];
 
         if (type === 'STATS') {
@@ -470,7 +471,7 @@ function processLiveMessage(data) {
             const suspectId = parts[1];
             const photo = parts[2];
             const timestamp = parts[3];
-            const details = parts.slice(4).join(',');
+            const details = parts.slice(4).join(delimiter);
             
             const suspectsGrid = document.getElementById('suspects-grid');
             if (suspectsGrid.querySelector('.border-dashed')) {
@@ -523,7 +524,7 @@ function processLiveMessage(data) {
             }
         }
         else if (type === 'FINISHED_DATA') {
-            const jsonDataStr = parts.slice(1).join(',');
+            const jsonDataStr = parts.slice(1).join(delimiter);
             try {
                 const data = JSON.parse(jsonDataStr);
                 state.sessionData = data;
