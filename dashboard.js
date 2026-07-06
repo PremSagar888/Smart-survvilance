@@ -1,9 +1,22 @@
 // ========== STATE MANAGEMENT ==========
 const params = new URLSearchParams(window.location.search);
+const brokerParam = params.get('broker');
+const wssParam = params.get('wss');
 const ipParam = params.get('ip');
-const serverHost = ipParam || window.location.hostname || "127.0.0.1";
-// Connect to the local WebSocket server even when dashboard is hosted on GitHub Pages
-const wsHost = (serverHost === "localhost" || serverHost === "127.0.0.1" || ipParam) ? serverHost : "127.0.0.1";
+
+const defaultBroker = "smart-surveillance-broker.onrender.com";
+
+let initialWsAddress;
+if (brokerParam) {
+    initialWsAddress = `wss://${brokerParam}?role=frontend`;
+} else if (wssParam) {
+    initialWsAddress = `wss://${wssParam}`;
+} else if (ipParam) {
+    initialWsAddress = `ws://${ipParam}:8765`;
+} else {
+    initialWsAddress = `wss://${defaultBroker}?role=frontend`;
+}
+
 let state = {
     connected: false,
     paused: false,
@@ -11,7 +24,7 @@ let state = {
     websocket: null,
     charts: {},
     reconnectTimer: null,
-    wsAddress: `ws://${wsHost}:8765`,
+    wsAddress: initialWsAddress,
     lastPacket: 'waiting...',
     sessionData: null
 };
@@ -91,24 +104,25 @@ document.addEventListener('DOMContentLoaded', () => {
     attachEventListeners();
 
     const params = new URLSearchParams(window.location.search);
+    const brokerParam = params.get('broker');
     const wssParam = params.get('wss');
-    if (wssParam) {
-        state.wsAddress = `wss://${wssParam}`;
+
+    if (brokerParam || wssParam) {
         console.log("Connecting to WebSocket from query param:", state.wsAddress);
         connectWebSocket();
     } else {
-        // Fetch session.json to check if there is an active WebSocket tunnel URL
+        // Fetch session.json to check if there is an active WebSocket override URL
         fetch('session.json')
             .then(res => res.json())
             .then(data => {
-                if (data && data.ws_url && !data.ws_url.includes('127.0.0.1')) {
-                    state.wsAddress = data.ws_url;
-                    console.log("Connecting to WebSocket tunnel from session.json:", state.wsAddress);
+                if (data && data.ws_url) {
+                    state.wsAddress = data.ws_url.includes('?') ? data.ws_url : `${data.ws_url}?role=frontend`;
+                    console.log("Connecting to WebSocket from session.json:", state.wsAddress);
                 }
                 connectWebSocket();
             })
             .catch(err => {
-                console.log("No active tunnel config found, connecting using default WS Address.");
+                console.log("Connecting using default WS address:", state.wsAddress);
                 connectWebSocket();
             });
     }
