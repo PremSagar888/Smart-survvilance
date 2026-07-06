@@ -89,10 +89,31 @@ function initializeChart(labels = [], personsData = [], objectsData = []) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeChart();
     attachEventListeners();
-    connectWebSocket();
+
+    const params = new URLSearchParams(window.location.search);
+    const wssParam = params.get('wss');
+    if (wssParam) {
+        state.wsAddress = `wss://${wssParam}`;
+        console.log("Connecting to WebSocket from query param:", state.wsAddress);
+        connectWebSocket();
+    } else {
+        // Fetch session.json to check if there is an active WebSocket tunnel URL
+        fetch('session.json')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.ws_url && !data.ws_url.includes('127.0.0.1')) {
+                    state.wsAddress = data.ws_url;
+                    console.log("Connecting to WebSocket tunnel from session.json:", state.wsAddress);
+                }
+                connectWebSocket();
+            })
+            .catch(err => {
+                console.log("No active tunnel config found, connecting using default WS Address.");
+                connectWebSocket();
+            });
+    }
 
     // Check if 'session' query param is present for auto-loading
-    const params = new URLSearchParams(window.location.search);
     const sessionParam = params.get('session');
     if (sessionParam) {
         document.getElementById('loaded-file-name').textContent = `Loading: ${sessionParam}...`;
