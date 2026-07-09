@@ -697,8 +697,8 @@ def run(
             try:
                 import subprocess
                 token = "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"
-                repo_url = f"https://{token}@github.com/PremSagar888/Smart-survvilance.git"
-                clean_url = "https://github.com/PremSagar888/Smart-survvilance.git"
+                repo_url = f"https://{token}@github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"
+                clean_url = "https://github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"
                 
                 print("[Git] Deploying initial session.json to GitHub Pages...")
                 subprocess.run(["git", "-C", str(git_repo_path), "remote", "set-url", "origin", repo_url], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -710,7 +710,7 @@ def run(
             except Exception as git_err:
                 print(f"[Git Error] Could not auto-deploy initial session to GitHub Pages: {git_err}")
                 try:
-                    subprocess.run(["git", "-C", str(git_repo_path), "remote", "set-url", "origin", "https://github.com/PremSagar888/Smart-survvilance.git"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["git", "-C", str(git_repo_path), "remote", "set-url", "origin", "https://github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except Exception:
                     pass
         except Exception:
@@ -731,7 +731,7 @@ def run(
     print(f"    {local_uri}")
     print(f"📱  Other Devices (Mobile/Tablet/PC on same network):")
     print(f"    👉  http://{local_ip}:8000/dashboard/index.html?ip={local_ip}  (Recommended — avoids HTTPS Mixed Content blocks)")
-    print(f"    👉  https://PremSagar888.github.io/Smart-survvilance/dashboard/?ip={local_ip}")
+    print(f"    👉  https://PremSagar888.github.io/Lab-surveillance-using-5G-Camera/dashboard/?ip={local_ip}")
     print(f"="*70 + "\n")
 
     persons_history = []
@@ -1363,8 +1363,8 @@ def run(
             try:
                 import subprocess
                 token = "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"
-                repo_url = f"https://{token}@github.com/PremSagar888/Smart-survvilance.git"
-                clean_url = "https://github.com/PremSagar888/Smart-survvilance.git"
+                repo_url = f"https://{token}@github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"
+                clean_url = "https://github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"
                 
                 print("[Git] Deploying updated session.json to GitHub Pages...")
                 # Temporarily configure token
@@ -1380,7 +1380,7 @@ def run(
                 print(f"[Git Error] Could not auto-deploy to GitHub Pages: {git_err}")
                 # Ensure clean URL is set in case of error
                 try:
-                    subprocess.run(["git", "-C", str(git_repo_path), "remote", "set-url", "origin", "https://github.com/PremSagar888/Smart-survvilance.git"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["git", "-C", str(git_repo_path), "remote", "set-url", "origin", "https://github.com/PremSagar888/Lab-surveillance-using-5G-Camera.git"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except Exception:
                     pass
         except Exception as e:
