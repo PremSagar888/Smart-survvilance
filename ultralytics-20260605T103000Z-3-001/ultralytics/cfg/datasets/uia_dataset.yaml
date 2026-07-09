@@ -1,0 +1,13 @@
+path: '/Data3/Sona/datasets/UIA_dataset'
+train: '/Data3/Sona/datasets/UIA_dataset/train/images'
+val: '/Data3/Sona/datasets/UIA_dataset/val/images'
+#test: '/Data3/Sona/ultralytics/ultralytics/cfg/datasets/YOLO_format_dataset/test/images'
+
+
+
+
+# class names
+names:
+  0: "DJMINI"
+  1: "CODRONE"
+  2: "TELLO"

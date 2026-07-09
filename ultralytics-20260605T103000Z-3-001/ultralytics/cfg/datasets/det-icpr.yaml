@@ -1,0 +1,12 @@
+path: /Data3/Abhin_Kerala/datasets/drone_nc/
+train: 'images/train'
+test: 'images/test'
+val:  'images/val'
+
+
+# number of classes
+#nc: 1
+
+# class names
+names:
+  0: "DRONE"

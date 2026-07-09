@@ -1,0 +1,23 @@
+path: /Data3/Sona/cd/cd/
+
+train: train/images
+val: val/images
+test: test/images
+
+nc: 13  # number of classes
+
+names:
+  0: Bacterial Blight
+  1: Blast
+  2: Brown Spot
+  3: Healthy
+  4: Leaf Blast
+  5: Leaf Blight
+  6: Leaf Burn
+  7: Leaf Scald
+  8: Leaf Smut
+  9: Narrow Brown Leaf Spot
+  10: Rice Hispa
+  11: Sheath Blight
+  12: Tungro
+

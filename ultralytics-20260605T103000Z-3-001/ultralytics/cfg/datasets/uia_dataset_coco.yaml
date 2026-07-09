@@ -1,0 +1,11 @@
+# uia_dataset.yaml
+
+path: /Data3/Sona/datasets/UIA_dataset
+
+train: benchmark_train/images
+val: benchmark_test_combined/images
+
+names:
+  0: "DJMINI"
+  1: "CODRONE"
+  2: "TELLO"

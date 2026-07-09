@@ -1,0 +1,12 @@
+path: /Data3/Abhishek/TIH/augmentation/weather/Fog/ICPR_Real/
+train: 'images/train'
+val: 'images/test'
+
+
+
+# number of classes
+#nc: 1
+
+# class names
+names:
+  0: "DRONE"

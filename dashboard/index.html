@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Lab Surveillance Control Room</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-[100dvh] lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-[#0F1115] text-[#F5F5F5] font-sans antialiased overflow-x-hidden">
+    <div class="ambient-orbit orbit-one"></div>
+    <div class="ambient-orbit orbit-two"></div>
+    <div class="ambient-grid"></div>
+
+    <!-- Sidebar -->
+    <div class="w-full lg:w-80 bg-[#0A0C0D] border-b lg:border-b-0 lg:border-r border-[#31363F] flex flex-col p-6 z-10 shrink-0 lg:h-screen lg:sticky lg:top-0 lg:overflow-y-auto">
+        <div class="space-y-6">
+            <!-- Brand & Mobile Toggle -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-[#2ECC71] animate-pulse"></div>
+                    <h2 class="text-xl font-bold tracking-wider text-[#2ECC71]">SECURE-OPS AI</h2>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-toggle" class="lg:hidden p-1 text-[#A7ADB5] hover:text-[#F5F5F5] focus:outline-none" aria-label="Toggle Controls Menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+            
+            <hr class="border-[#31363F] hidden lg:block">
+
+            <!-- Collapsible Sidebar Menu Content -->
+            <div id="sidebar-collapsible" class="hidden lg:block space-y-6">
+                <!-- Control Actions -->
+                <div class="space-y-3">
+                    <p class="text-xs uppercase font-bold tracking-widest text-[#A7ADB5] mb-2">Controls</p>
+                    <button id="upload-btn" onclick="document.getElementById('session-upload-input').click()" class="w-full px-4 py-3 bg-[#1A1E23] hover:bg-[#31363F] text-[#F5F5F5] border border-[#31363F] rounded-lg transition font-semibold flex items-center justify-center gap-2 text-sm">
+                        <svg class="w-4 h-4 text-[#C97C2C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        Load Session JSON
+                    </button>
+                    <input type="file" id="session-upload-input" accept=".json" class="hidden">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button id="toggle-updates" class="flex-grow px-4 py-3 bg-[#1A1E23] hover:bg-[#31363F] text-[#F5F5F5] border border-[#31363F] rounded-lg transition font-semibold text-xs whitespace-nowrap">
+                            Pause Live
+                        </button>
+                        <button id="stop-updates" class="flex-grow px-4 py-3 bg-[#E63946] hover:bg-opacity-90 text-white rounded-lg transition font-bold text-xs whitespace-nowrap">
+                            Stop Live
+                        </button>
+                    </div>
+                    
+                    <button id="export-data" class="w-full px-4 py-3 bg-[#C97C2C] hover:bg-opacity-90 text-[#0F1115] rounded-lg transition font-bold text-sm">
+                        Export Session CSV
+                    </button>
+                </div>
+
+                <!-- Connection Status -->
+                <div class="p-4 bg-[#1A1E23] border border-[#31363F] rounded-lg space-y-2">
+                    <p class="text-xs uppercase font-bold tracking-widest text-[#A7ADB5]">Connection</p>
+                    <div class="flex items-center gap-2">
+                        <div id="connection-status" class="w-3.5 h-3.5 rounded-full bg-[#E63946]"></div>
+                        <span id="status-text" class="text-sm font-semibold text-[#A7ADB5]">Disconnected</span>
+                    </div>
+                    <p id="ws-target" class="text-[11px] text-[#A7ADB5] font-mono truncate">Socket: --</p>
+                    <p id="last-packet" class="text-[10px] text-[#A7ADB5] font-mono truncate">Packet: waiting...</p>
+                </div>
+
+                <!-- Sidebar Footer -->
+                <div class="space-y-2 pt-4 border-t border-[#31363F] lg:border-t-0 lg:pt-0">
+                    <span id="loaded-file-name" class="text-xs text-[#A7ADB5] italic block truncate">No session loaded</span>
+                    <p class="text-[10px] text-[#A7ADB5]">SECURE-OPS CCTV Dashboard v1.1</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Panel -->
+    <div class="flex-grow flex flex-col p-4 md:p-8 overflow-y-auto z-10 relative">
+        <!-- Status Banner -->
+        <div class="mb-6 slide-down">
+            <div id="status-banner" class="alert-banner alert-normal">
+                <span class="status-dot"></span>
+                <span id="banner-text">Surveillance Active - System Monitoring Healthy</span>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-black tracking-wider text-[#F5F5F5]">
+                    LAB SURVEILLANCE & <span class="text-[#2ECC71]">SECURITY HUB</span>
+                </h1>
+                <p class="text-[#A7ADB5] text-xs md:text-sm mt-1">Real-time occupancy analytics, multi-object tracking, and automated threat triggers</p>
+            </div>
+            <div class="sm:text-right">
+                <p id="session-timestamp" class="text-xs font-mono text-[#A7ADB5]">Session: Active Stream</p>
+            </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+            <!-- Threat Level Card -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-5 rounded-[12px] flex flex-col justify-between">
+                <p class="text-[#A7ADB5] text-xs uppercase font-bold tracking-wider">Threat Level</p>
+                <div class="mt-2">
+                    <span id="session-status-badge" class="text-2xl font-black text-[#2ECC71] tracking-wider">NORMAL</span>
+                </div>
+                <p id="session-status-desc" class="text-[#A7ADB5] text-[11px] mt-2">No suspicious activity detected</p>
+            </div>
+
+            <!-- Occupancy Card -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-5 rounded-[12px] flex flex-col justify-between">
+                <p class="text-[#A7ADB5] text-xs uppercase font-bold tracking-wider">Occupancy (Active)</p>
+                <div class="mt-2">
+                    <span id="unique-persons-count" class="text-3xl font-black text-[#2ECC71]">0</span>
+                </div>
+                <p class="text-[#A7ADB5] text-[11px] mt-2">Total persons observed</p>
+            </div>
+
+            <!-- Total Frames -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-5 rounded-[12px] flex flex-col justify-between">
+                <p class="text-[#A7ADB5] text-xs uppercase font-bold tracking-wider">Processed Frames</p>
+                <div class="mt-2">
+                    <span id="total-frames-count" class="text-3xl font-black text-[#C97C2C]">0</span>
+                </div>
+                <p class="text-[#A7ADB5] text-[11px] mt-2">Frame rate telemetry active</p>
+            </div>
+
+            <!-- Avg YOLO Confidence -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-5 rounded-[12px] flex flex-col justify-between">
+                <p class="text-[#A7ADB5] text-xs uppercase font-bold tracking-wider">Avg YOLO Accuracy</p>
+                <div class="mt-2">
+                    <span id="avg-confidence" class="text-3xl font-black text-[#2ECC71]">0.0%</span>
+                </div>
+                <p class="text-[#A7ADB5] text-[11px] mt-2">Accrued target accuracy</p>
+            </div>
+        </div>
+
+        <!-- 3-Column Middle Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8 items-stretch">
+            <!-- Column 1: Lab Summary (spans 2 cols on md and up) -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-6 rounded-[12px] md:col-span-2 min-w-0 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-[#C97C2C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <h2 class="text-xl font-bold tracking-wider text-[#F5F5F5]">Lab Summary</h2>
+                    </div>
+                    <p id="qwen-summary-text" class="text-[#A7ADB5] leading-relaxed text-sm italic bg-[#0A0C0D] p-4 rounded-lg border border-[#31363F]">
+                        "Awaiting surveillance stream compilation. Factual narrative reports generated by Qwen model will populate here automatically upon session complete."
+                    </p>
+                </div>
+                <div class="mt-4 text-[10px] text-[#A7ADB5]">AI Report Agent: Qwen2.5-0.5B-Instruct</div>
+            </div>
+
+            <!-- Column 2: Suspect Database & Theft Triggers -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-6 rounded-[12px] md:col-span-1 min-w-0 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#E63946]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <h2 class="text-base font-bold tracking-wider text-[#F5F5F5]">Suspect Database</h2>
+                        </div>
+                        <span id="suspects-count" class="px-2 py-0.5 bg-[#E63946] bg-opacity-20 text-[#E63946] border border-[#E63946] border-opacity-30 rounded-full text-[10px] font-bold">0 Suspects</span>
+                    </div>
+                    <!-- Suspect list -->
+                    <div id="suspects-grid" class="space-y-4 max-h-[16rem] overflow-y-auto pr-1">
+                        <div class="text-center py-8 text-[#A7ADB5] border border-dashed border-[#31363F] rounded-lg text-xs">
+                            No suspects captured.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Activity Timeline Chart -->
+            <div class="bg-[#1A1E23] border border-[#31363F] p-6 rounded-[12px] md:col-span-1 min-w-0 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-base font-bold tracking-wider text-[#F5F5F5] mb-4">Activity Timeline</h2>
+                    <div class="chart-container" style="height: 14rem;">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Row: Persons ID Photos -->
+        <div class="bg-[#1A1E23] border border-[#31363F] p-6 rounded-[12px] mb-6">
+            <div class="flex items-center gap-2 mb-6">
+                <svg class="w-5 h-5 text-[#2ECC71]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <h2 class="text-xl font-bold tracking-wider text-[#F5F5F5]">Persons ID Database</h2>
+            </div>
+            
+            <div id="id-photos-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-4 min-h-[8rem]">
+                <!-- Detections will load here -->
+                <div class="col-span-full text-center py-8 text-[#A7ADB5] border border-dashed border-[#31363F] rounded-lg text-xs">
+                    Awaiting tracked individuals database...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 hidden flex items-center justify-center z-50 transition-all duration-300">
+        <div class="absolute inset-0 bg-[#0F1115] bg-opacity-95 cursor-pointer" onclick="closeImageModal()"></div>
+        <div class="bg-[#1A1E23] p-4 rounded-lg w-11/12 h-5/6 max-w-4xl relative flex flex-col border border-[#31363F] shadow-2xl z-10">
+            <button onclick="closeImageModal()" class="absolute top-4 right-4 text-[#F5F5F5] hover:text-[#E63946] text-3xl font-bold">×</button>
+            <h2 id="image-modal-title" class="text-lg font-bold text-[#F5F5F5] mb-4 text-center"></h2>
+            <div class="flex-grow flex items-center justify-center overflow-hidden">
+                <img id="image-modal-img" src="" class="max-w-full max-h-full object-contain rounded border border-[#31363F]">
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

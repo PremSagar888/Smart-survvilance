@@ -1,0 +1,14 @@
+# fisheye_dataset.yaml
+
+# Root path of the dataset
+path: /Data3/Sona/Fisheye8K_all/
+
+# Paths to training and validation image folders (relative to 'path')
+train: train/images
+val: test/images
+# Number of classes
+nc: 5
+
+# Class names
+names: ["bus", "bike", "car", "pedestrian", "truck"]
+

@@ -1,0 +1,16 @@
+# AOD-4 Dataset Configuration File for YOLO
+
+# Paths to the image datasets
+train: /Data3/Sona/AOD_4/train/images
+val: /Data3/Sona/AOD_4/val/images
+test: /Data3/Sona/AOD_4/test/images  # Optional, include if test set is used
+
+# Number of classes
+nc: 4
+
+# Class names
+names:
+  0: airplane
+  1: helicopter
+  2: drone
+  3: bird
